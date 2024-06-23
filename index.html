@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toby il Pechinese vuole fare un giro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        #game-container {
+            text-align: center;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        #toby {
+            width: 200px;
+            height: 200px;
+            background-image: url('/api/placeholder/200/200');
+            background-size: cover;
+            margin: 20px auto;
+            cursor: pointer;
+        }
+        #bark-meter {
+            width: 100%;
+            height: 20px;
+            background-color: #ddd;
+            margin-top: 20px;
+        }
+        #bark-progress {
+            width: 0%;
+            height: 100%;
+            background-color: #4CAF50;
+            transition: width 0.5s;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <h1>Toby vuole fare un giro!</h1>
+        <p>Clicca su Toby per farlo abbaiare. Riempi la barra per convincere Luciano a portarlo fuori!</p>
+        <div id="toby"></div>
+        <div id="bark-meter">
+            <div id="bark-progress"></div>
+        </div>
+        <p id="message">Toby ti guarda speranzoso...</p>
+    </div>
+
+    <script>
+        const toby = document.getElementById('toby');
+        const barkProgress = document.getElementById('bark-progress');
+        const message = document.getElementById('message');
+        let barkCount = 0;
+
+        toby.addEventListener('click', () => {
+            barkCount++;
+            const progress = Math.min(barkCount * 10, 100);
+            barkProgress.style.width = progress + '%';
+
+            if (progress < 100) {
+                message.textContent = "Bau! Bau! Toby vuole uscire!";
+            } else {
+                message.textContent = "Luciano ha deciso di portare Toby a fare un giro! Hai vinto!";
+                toby.style.pointerEvents = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
