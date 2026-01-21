@@ -1,0 +1,1565 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bologna Cyberpunk - Gestionale Narrativo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #0a0e17;
+            --bg-mid: #141b2d;
+            --bg-light: #1e2a45;
+            --accent-cyan: #00d9ff;
+            --accent-pink: #ff006e;
+            --accent-yellow: #ffbe0b;
+            --text-primary: #e0e0e0;
+            --text-secondary: #a0a0a0;
+            --danger: #ff3864;
+            --success: #06ffa5;
+            --warning: #ffbe0b;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        header {
+            background: var(--bg-mid);
+            padding: 1rem 2rem;
+            border-bottom: 2px solid var(--accent-cyan);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        h1 {
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px var(--accent-cyan);
+        }
+
+        .game-container {
+            display: grid;
+            grid-template-columns: 300px 1fr 350px;
+            gap: 1rem;
+            padding: 1rem;
+            min-height: calc(100vh - 100px);
+        }
+
+        .panel {
+            background: var(--bg-mid);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 4px;
+            padding: 1rem;
+            overflow-y: auto;
+            max-height: calc(100vh - 120px);
+        }
+
+        .panel h2 {
+            color: var(--accent-cyan);
+            border-bottom: 1px solid var(--accent-cyan);
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+        }
+
+        .stats-grid {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat {
+            background: var(--bg-light);
+            padding: 0.8rem;
+            border-radius: 4px;
+            border-left: 3px solid var(--accent-cyan);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-top: 0.3rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: var(--bg-dark);
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+            border: 1px solid var(--accent-cyan);
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: width 0.3s ease, background-color 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+        }
+
+        .zone {
+            background: var(--bg-light);
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+            border-radius: 4px;
+            border-left: 3px solid var(--accent-pink);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .zone:hover {
+            background: #2a3a5a;
+            transform: translateX(5px);
+        }
+
+        .zone-name {
+            font-weight: bold;
+            color: var(--accent-pink);
+            margin-bottom: 0.3rem;
+        }
+
+        .zone-status {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        .event {
+            background: var(--bg-dark);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            border-left: 4px solid var(--accent-yellow);
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .event-title {
+            color: var(--accent-yellow);
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-description {
+            font-size: 0.9rem;
+            margin-bottom: 0.8rem;
+            line-height: 1.5;
+        }
+
+        .event-choices {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            background: var(--bg-light);
+            color: var(--text-primary);
+            border: 1px solid var(--accent-cyan);
+            padding: 0.6rem 1rem;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.2s;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .btn:hover {
+            background: var(--accent-cyan);
+            color: var(--bg-dark);
+            box-shadow: 0 0 15px var(--accent-cyan);
+        }
+
+        .btn-danger {
+            border-color: var(--danger);
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+        }
+
+        .btn-success {
+            border-color: var(--success);
+        }
+
+        .btn-success:hover {
+            background: var(--success);
+        }
+
+        .orgchart {
+            background: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .org-node {
+            background: var(--bg-dark);
+            border: 2px solid var(--accent-cyan);
+            padding: 0.8rem;
+            margin: 0.5rem 0;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .org-node:hover {
+            border-color: var(--accent-pink);
+            transform: scale(1.02);
+        }
+
+        .org-node.selected {
+            border-color: var(--accent-yellow);
+            box-shadow: 0 0 20px rgba(255, 190, 11, 0.3);
+        }
+
+        .org-node-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .org-node-name {
+            font-weight: bold;
+            color: var(--accent-cyan);
+        }
+
+        .org-node-role {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .org-node-stats {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        .org-node-subordinates {
+            margin-left: 2rem;
+            border-left: 2px solid var(--accent-cyan);
+            padding-left: 1rem;
+        }
+
+        .faction-badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .faction-comune { background: #3a86ff; }
+        .faction-corporate { background: #ff006e; }
+        .faction-sindacati { background: #fb5607; }
+        .faction-hacker { background: #06ffa5; }
+        .faction-criminali { background: #8338ec; }
+        .faction-universita { background: #ffbe0b; }
+
+        .turn-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .turn-info {
+            background: var(--bg-dark);
+            padding: 1rem;
+            border-radius: 4px;
+            border: 1px solid var(--accent-cyan);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .alert {
+            background: var(--bg-dark);
+            border-left: 4px solid var(--danger);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+        }
+
+        .alert.warning {
+            border-left-color: var(--warning);
+        }
+
+        .alert.success {
+            border-left-color: var(--success);
+        }
+
+        .person-detail {
+            background: var(--bg-dark);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+        }
+
+        .trait {
+            display: inline-block;
+            background: var(--bg-light);
+            padding: 0.3rem 0.6rem;
+            margin: 0.2rem;
+            border-radius: 3px;
+            font-size: 0.75rem;
+            border: 1px solid var(--accent-cyan);
+        }
+
+        .relationship {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            background: var(--bg-light);
+            margin: 0.3rem 0;
+            border-radius: 3px;
+            font-size: 0.85rem;
+        }
+
+        .action-menu {
+            background: var(--bg-dark);
+            border: 2px solid var(--accent-cyan);
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+        }
+
+        .action-menu h3 {
+            color: var(--accent-cyan);
+            margin-bottom: 1rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 1001;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: var(--bg-mid);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 4px;
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid var(--accent-cyan);
+            padding-bottom: 1rem;
+        }
+
+        .close-modal {
+            cursor: pointer;
+            font-size: 1.5rem;
+            color: var(--accent-pink);
+        }
+
+        .close-modal:hover {
+            color: var(--danger);
+        }
+
+        @media (max-width: 1200px) {
+            .game-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .log-entry {
+            padding: 0.5rem;
+            border-bottom: 1px solid var(--bg-light);
+            font-size: 0.85rem;
+        }
+
+        .log-entry .timestamp {
+            color: var(--accent-cyan);
+            margin-right: 0.5rem;
+        }
+
+        .intro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 14, 23, 0.98);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .intro-content {
+            max-width: 700px;
+            padding: 3rem;
+            background: var(--bg-mid);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .intro-content h2 {
+            color: var(--accent-cyan);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .intro-content p {
+            margin-bottom: 1rem;
+            line-height: 1.8;
+        }
+
+        .intro-content ul {
+            margin: 1rem 0 1rem 2rem;
+            line-height: 1.8;
+        }
+
+        .intro-content .btn {
+            width: 100%;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="scanlines"></div>
+
+    <!-- Intro Screen -->
+    <div class="intro-screen" id="intro-screen">
+        <div class="intro-content">
+            <h2>⬢ BOLOGNA CYBERPUNK ⬢</h2>
+            <h3 style="color: var(--accent-pink); text-align: center; margin-bottom: 2rem;">Organigramma del Potere</h3>
+
+            <p><strong>Anno 2047.</strong> Bologna è governata da un equilibrio instabile tra Comune, Corporazioni, Università, Sindacati, Collettivi Hacker e Clan Criminali ibridi.</p>
+
+            <p><strong>Tu sei l'Architetto del Potere.</strong> Il tuo obiettivo: mantenere governabilità, flussi economici e ordine pubblico, evitando collassi istituzionali, takeover corporativi o insurrezioni.</p>
+
+            <p style="color: var(--accent-cyan); font-weight: bold; margin-top: 1.5rem;">Meccaniche Organizzative:</p>
+            <ul style="font-size: 0.9rem;">
+                <li><strong>Span of Control:</strong> Ogni leader gestisce un numero limitato di subordinati. Troppi = caos. Troppo pochi = burocrazia.</li>
+                <li><strong>Centralizzazione:</strong> Centralizzare dà controllo ma vulnerabilità. Decentralizzare dà resilienza ma rischio di frammentazione.</li>
+                <li><strong>Task Force:</strong> Crea team inter-funzionali per gestire crisi e coordinare unità.</li>
+                <li><strong>Crisi & Escalation:</strong> Eventi non gestiti escalano e causano danni crescenti.</li>
+            </ul>
+
+            <p style="color: var(--accent-yellow); font-weight: bold; margin-top: 1.5rem;">Come si gioca:</p>
+            <ul style="font-size: 0.9rem;">
+                <li>Ogni turno, affronti eventi e prendi decisioni</li>
+                <li>Gestisci l'organigramma: promuovi, rimuovi, delega</li>
+                <li>Bilancia centralizzazione e decentralizzazione</li>
+                <li>Crea task force per risolvere crisi complesse</li>
+                <li>Monitora governabilità, economia e ordine pubblico</li>
+            </ul>
+
+            <p style="text-align: center; margin-top: 2rem; color: var(--text-secondary); font-size: 0.9rem;">
+                <em>Ogni partita genera una storia unica.</em>
+            </p>
+
+            <button class="btn btn-success" onclick="startGame()">▶ INIZIA LA PARTITA</button>
+        </div>
+    </div>
+
+    <header>
+        <h1>⬢ Bologna Cyberpunk ⬢ Organigramma del Potere</h1>
+    </header>
+
+    <div class="game-container">
+        <!-- LEFT PANEL: City Status -->
+        <div class="panel">
+            <h2>▸ Stato della Città</h2>
+
+            <div class="turn-info">
+                <div class="stat-label">Turno</div>
+                <div class="stat-value" id="turn-number">1</div>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat">
+                    <div class="stat-label">Governabilità</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="governability-bar" style="width: 70%; background: var(--accent-cyan);">70</div>
+                    </div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-label">Economia</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="economy-bar" style="width: 65%; background: var(--success);">65</div>
+                    </div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-label">Ordine Pubblico</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="order-bar" style="width: 60%; background: var(--warning);">60</div>
+                    </div>
+                </div>
+            </div>
+
+            <h2 style="margin-top: 1.5rem;">▸ Metriche Organizzative</h2>
+            <div class="stats-grid">
+                <div class="stat">
+                    <div class="stat-label">Centralizzazione</div>
+                    <div class="stat-value" id="centralization-value" style="font-size: 1.2rem;">--</div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-label">Span Medio</div>
+                    <div class="stat-value" id="span-value" style="font-size: 1.2rem;">--</div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-label">Task Force Attive</div>
+                    <div class="stat-value" id="taskforce-value" style="font-size: 1.2rem;">0</div>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 1rem;">
+                <button class="btn" onclick="game.centralize()" style="font-size: 0.8rem;">⬆ Centralizza</button>
+                <button class="btn" onclick="game.decentralize()" style="font-size: 0.8rem;">⬇ Decentralizza</button>
+            </div>
+
+            <h2 style="margin-top: 1.5rem;">▸ Zone di Bologna</h2>
+            <div id="zones-list"></div>
+
+            <div class="turn-controls">
+                <button class="btn btn-success" onclick="game.nextTurn()">▶ Prossimo Turno</button>
+            </div>
+        </div>
+
+        <!-- CENTER PANEL: Orgchart & Main View -->
+        <div class="panel">
+            <h2>▸ Task Force & Crisi</h2>
+            <div id="taskforce-panel" style="margin-bottom: 2rem;">
+                <div id="active-taskforces"></div>
+                <button class="btn btn-success" onclick="game.showCreateTaskforce()">+ Crea Task Force</button>
+            </div>
+
+            <div id="active-crises"></div>
+
+            <h2>▸ Organigramma del Potere</h2>
+
+            <div id="orgchart-view"></div>
+
+            <div class="action-menu" id="action-menu" style="display: none;">
+                <h3>Azioni Disponibili</h3>
+                <div id="available-actions"></div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL: Events & Info -->
+        <div class="panel">
+            <h2>▸ Eventi & Notizie</h2>
+            <div id="events-feed"></div>
+
+            <h2 style="margin-top: 2rem;">▸ Log</h2>
+            <div id="log-feed"></div>
+        </div>
+    </div>
+
+    <!-- Modal for person details -->
+    <div id="person-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-person-name"></h2>
+                <span class="close-modal" onclick="closePersonModal()">✕</span>
+            </div>
+            <div id="modal-person-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // GAME ENGINE - Bologna Cyberpunk
+        // ============================================
+
+        class BolognaCyberpunkGame {
+            constructor() {
+                this.turn = 1;
+                this.governability = 70;
+                this.economy = 65;
+                this.order = 60;
+
+                this.zones = this.initZones();
+                this.factions = this.initFactions();
+                this.people = this.initPeople();
+                this.orgChart = this.initOrgChart();
+                this.events = [];
+                this.log = [];
+
+                this.selectedPerson = null;
+
+                // Advanced organizational mechanics
+                this.taskForces = [];
+                this.activeCrises = [];
+                this.centralizationLevel = 50; // 0-100: 0 = max decentralization, 100 = max centralization
+                this.organizationalRisks = {
+                    spanTooWide: false,
+                    spanTooNarrow: false,
+                    overCentralized: false,
+                    overDecentralized: false
+                };
+            }
+
+            initZones() {
+                return {
+                    centroStorico: {
+                        name: "Centro Storico",
+                        description: "Zona vetrina",
+                        surveillance: 85,
+                        tension: 30,
+                        problems: ["Proteste turistiche", "Pressione politica alta"],
+                        controlledBy: "comune"
+                    },
+                    bolognina: {
+                        name: "Bolognina",
+                        description: "Tensione sociale alta",
+                        surveillance: 40,
+                        tension: 75,
+                        problems: ["Fablab illegali", "Contrabbando tech", "Reti informali"],
+                        controlledBy: "mixed"
+                    },
+                    zonaFiera: {
+                        name: "Zona Fiera",
+                        description: "Centro corporativo",
+                        surveillance: 70,
+                        tension: 45,
+                        problems: ["Lobbying aggressivo", "Conflitti sindacali"],
+                        controlledBy: "corporate"
+                    },
+                    universita: {
+                        name: "Quartiere Universitario",
+                        description: "Ricerca e hacktivismo",
+                        surveillance: 55,
+                        tension: 60,
+                        problems: ["Fuga di dati", "Proteste studentesche", "Lab non autorizzati"],
+                        controlledBy: "universita"
+                    },
+                    interporto: {
+                        name: "Interporto",
+                        description: "Hub logistico",
+                        surveillance: 50,
+                        tension: 65,
+                        problems: ["Scioperi", "Traffici illeciti", "Estorsioni"],
+                        controlledBy: "mixed"
+                    }
+                };
+            }
+
+            initFactions() {
+                return {
+                    comune: { name: "Comune", power: 70, influence: 65 },
+                    corporate: { name: "Corporazioni", power: 75, influence: 70 },
+                    sindacati: { name: "Sindacati", power: 50, influence: 55 },
+                    hacker: { name: "Collettivi Hacker", power: 45, influence: 50 },
+                    criminali: { name: "Clan Ibridi", power: 60, influence: 45 },
+                    universita: { name: "Università", power: 55, influence: 60 }
+                };
+            }
+
+            initPeople() {
+                const traits = [
+                    "opportunista", "idealista", "paranoico", "cinico",
+                    "tecnico puro", "politico navigato", "corrotto", "leale",
+                    "ambizioso", "pragmatico"
+                ];
+
+                const people = [
+                    // Comune
+                    { id: 1, name: "Elena Rossi", role: "Sindaca", faction: "comune", loyalty: 80, stress: 45, reputation: 75, traits: ["politico navigato", "pragmatico"] },
+                    { id: 2, name: "Marco Bianchi", role: "Assessore Sicurezza", faction: "comune", loyalty: 70, stress: 55, reputation: 65, traits: ["paranoico", "leale"] },
+                    { id: 3, name: "Sofia Martini", role: "Capo Polizia Locale", faction: "comune", loyalty: 75, stress: 60, reputation: 70, traits: ["tecnico puro", "idealista"] },
+
+                    // Corporate
+                    { id: 4, name: "Alessandro Neri", role: "CEO MegaCorp Bologna", faction: "corporate", loyalty: 85, stress: 40, reputation: 80, traits: ["opportunista", "ambizioso"] },
+                    { id: 5, name: "Valentina Costa", role: "Direttrice Sicurezza Privata", faction: "corporate", loyalty: 90, stress: 50, reputation: 75, traits: ["cinico", "tecnico puro"] },
+                    { id: 6, name: "Luca Ferrari", role: "Manager Logistica", faction: "corporate", loyalty: 65, stress: 55, reputation: 60, traits: ["corrotto", "pragmatico"] },
+
+                    // Sindacati
+                    { id: 7, name: "Giuseppe Verdi", role: "Segretario CGIL", faction: "sindacati", loyalty: 85, stress: 65, reputation: 70, traits: ["idealista", "politico navigato"] },
+                    { id: 8, name: "Anna Lombardi", role: "Coordinatrice Cooperative", faction: "sindacati", loyalty: 80, stress: 50, reputation: 65, traits: ["leale", "pragmatico"] },
+
+                    // Hacker
+                    { id: 9, name: "Zero", role: "Leader Collective ROOT", faction: "hacker", loyalty: 70, stress: 70, reputation: 50, traits: ["idealista", "tecnico puro", "paranoico"] },
+                    { id: 10, name: "Cipher", role: "Hacktivista", faction: "hacker", loyalty: 75, stress: 65, reputation: 45, traits: ["cinico", "ambizioso"] },
+
+                    // Criminali
+                    { id: 11, name: "Il Dottore", role: "Capo Clan", faction: "criminali", loyalty: 95, stress: 35, reputation: 40, traits: ["opportunista", "politico navigato", "corrotto"] },
+                    { id: 12, name: "Viper", role: "Fixer", faction: "criminali", loyalty: 80, stress: 45, reputation: 35, traits: ["cinico", "pragmatico"] },
+
+                    // Università
+                    { id: 13, name: "Prof. Giovanni Salvi", role: "Rettore", faction: "universita", loyalty: 70, stress: 50, reputation: 80, traits: ["idealista", "politico navigato"] },
+                    { id: 14, name: "Dr. Maria Gallo", role: "Responsabile Lab AI", faction: "universita", loyalty: 65, stress: 60, reputation: 75, traits: ["tecnico puro", "ambizioso"] }
+                ];
+
+                // Genera relazioni casuali
+                people.forEach(person => {
+                    person.relationships = {};
+                    person.ambition = Math.floor(Math.random() * 100);
+                    person.competence = Math.floor(50 + Math.random() * 50);
+                });
+
+                return people;
+            }
+
+            initOrgChart() {
+                // Struttura organizzativa iniziale
+                return {
+                    root: {
+                        personId: 1, // Sindaca
+                        subordinates: [
+                            {
+                                personId: 2, // Assessore Sicurezza
+                                subordinates: [
+                                    { personId: 3, subordinates: [] } // Capo Polizia
+                                ]
+                            }
+                        ]
+                    },
+                    corporate: {
+                        personId: 4, // CEO
+                        subordinates: [
+                            { personId: 5, subordinates: [] }, // Sicurezza
+                            { personId: 6, subordinates: [] }  // Logistica
+                        ]
+                    },
+                    sindacati: {
+                        personId: 7, // Segretario
+                        subordinates: [
+                            { personId: 8, subordinates: [] } // Cooperative
+                        ]
+                    },
+                    hacker: {
+                        personId: 9, // Zero
+                        subordinates: [
+                            { personId: 10, subordinates: [] } // Cipher
+                        ]
+                    },
+                    criminali: {
+                        personId: 11, // Il Dottore
+                        subordinates: [
+                            { personId: 12, subordinates: [] } // Viper
+                        ]
+                    },
+                    universita: {
+                        personId: 13, // Rettore
+                        subordinates: [
+                            { personId: 14, subordinates: [] } // Lab AI
+                        ]
+                    }
+                };
+            }
+
+            getPerson(id) {
+                return this.people.find(p => p.id === id);
+            }
+
+            // ============================================
+            // ORGANIZATIONAL MECHANICS
+            // ============================================
+
+            calculateSpanOfControl(node) {
+                if (!node || !node.subordinates) return 0;
+                return node.subordinates.length;
+            }
+
+            calculateAverageSpan() {
+                const allNodes = [];
+                const collectNodes = (node) => {
+                    if (!node) return;
+                    allNodes.push(node);
+                    if (node.subordinates) {
+                        node.subordinates.forEach(collectNodes);
+                    }
+                };
+
+                Object.values(this.orgChart).forEach(collectNodes);
+
+                const spans = allNodes.map(n => this.calculateSpanOfControl(n));
+                const avg = spans.reduce((a, b) => a + b, 0) / spans.length;
+                return Math.round(avg * 10) / 10;
+            }
+
+            analyzeOrganizationalRisks() {
+                const avgSpan = this.calculateAverageSpan();
+
+                // Span of control analysis
+                if (avgSpan > 7) {
+                    this.organizationalRisks.spanTooWide = true;
+                    this.governability -= 0.5; // Decisioni lente
+                    if (Math.random() < 0.1) {
+                        this.addLog("⚠ Span troppo ampio: rischio sabotaggi non intercettati");
+                    }
+                } else {
+                    this.organizationalRisks.spanTooWide = false;
+                }
+
+                if (avgSpan < 2 && avgSpan > 0) {
+                    this.organizationalRisks.spanTooNarrow = true;
+                    this.economy -= 0.3; // Eccesso di burocrazia
+                    if (Math.random() < 0.1) {
+                        this.addLog("⚠ Span troppo stretto: eccesso di livelli gerarchici");
+                    }
+                } else {
+                    this.organizationalRisks.spanTooNarrow = false;
+                }
+
+                // Centralization analysis
+                if (this.centralizationLevel > 80) {
+                    this.organizationalRisks.overCentralized = true;
+                    // Vulnerabilità a blocchi decisionali
+                    if (Math.random() < 0.15) {
+                        this.addLog("⚠ Iper-centralizzazione: blocco decisionale");
+                        this.governability -= 3;
+                    }
+                } else {
+                    this.organizationalRisks.overCentralized = false;
+                }
+
+                if (this.centralizationLevel < 20) {
+                    this.organizationalRisks.overDecentralized = true;
+                    // Rischio "signori di quartiere"
+                    if (Math.random() < 0.15) {
+                        this.addLog("⚠ Iper-decentralizzazione: emergono poteri locali autonomi");
+                        this.order -= 3;
+                    }
+                } else {
+                    this.organizationalRisks.overDecentralized = false;
+                }
+            }
+
+            createTaskForce(name, members, purpose) {
+                const taskForce = {
+                    id: Date.now(),
+                    name,
+                    members, // array of person IDs
+                    purpose,
+                    effectiveness: 0,
+                    turnsActive: 0,
+                    cost: members.length * 5 // Economic cost
+                };
+
+                this.taskForces.push(taskForce);
+                this.economy -= taskForce.cost;
+                this.addLog(`✓ Task force "${name}" creata con ${members.length} membri`);
+
+                return taskForce;
+            }
+
+            updateTaskForces() {
+                this.taskForces.forEach(tf => {
+                    tf.turnsActive++;
+
+                    // Calculate effectiveness based on member competence and stress
+                    const members = tf.members.map(id => this.getPerson(id));
+                    const avgCompetence = members.reduce((sum, p) => sum + p.competence, 0) / members.length;
+                    const avgStress = members.reduce((sum, p) => sum + p.stress, 0) / members.length;
+
+                    tf.effectiveness = Math.max(0, avgCompetence - avgStress * 0.5);
+
+                    // Apply benefits
+                    if (tf.effectiveness > 60) {
+                        this.governability += 2;
+                        if (tf.turnsActive % 3 === 0) {
+                            this.addLog(`✓ Task force "${tf.name}" sta producendo risultati`);
+                        }
+                    }
+
+                    // Ongoing costs
+                    this.economy -= tf.cost * 0.3;
+
+                    // Increase stress for members
+                    members.forEach(p => {
+                        p.stress = Math.min(100, p.stress + 2);
+                    });
+                });
+
+                // Remove task forces that are too old or ineffective
+                this.taskForces = this.taskForces.filter(tf => {
+                    if (tf.turnsActive > 8 || tf.effectiveness < 30) {
+                        this.addLog(`Task force "${tf.name}" sciolta`);
+                        return false;
+                    }
+                    return true;
+                });
+            }
+
+            createCrisis(type, severity, zone) {
+                const crisis = {
+                    id: Date.now(),
+                    type,
+                    severity, // 1-10
+                    zone,
+                    escalationLevel: 1,
+                    turnsActive: 0,
+                    resolved: false
+                };
+
+                this.activeCrises.push(crisis);
+                this.addLog(`🔴 CRISI: ${type} in ${zone} (gravità ${severity})`);
+
+                return crisis;
+            }
+
+            updateCrises() {
+                this.activeCrises.forEach(crisis => {
+                    crisis.turnsActive++;
+
+                    // Escalation if not addressed
+                    if (crisis.turnsActive > 2 && Math.random() < 0.4) {
+                        crisis.escalationLevel++;
+                        crisis.severity = Math.min(10, crisis.severity + 1);
+                        this.addLog(`⬆ Escalation: ${crisis.type} (livello ${crisis.escalationLevel})`);
+
+                        // Apply increasing damage
+                        this.governability -= crisis.severity * 0.5;
+                        this.order -= crisis.severity * 0.7;
+                    }
+
+                    // Check if there's a task force addressing it
+                    const relevantTF = this.taskForces.find(tf =>
+                        tf.purpose.includes(crisis.type.substring(0, 10))
+                    );
+
+                    if (relevantTF && relevantTF.effectiveness > 50) {
+                        crisis.severity = Math.max(0, crisis.severity - 2);
+                        if (crisis.severity === 0) {
+                            crisis.resolved = true;
+                            this.addLog(`✓ Crisi risolta: ${crisis.type}`);
+                            this.governability += 10;
+                        }
+                    }
+                });
+
+                // Remove resolved crises
+                this.activeCrises = this.activeCrises.filter(c => !c.resolved);
+
+                // Create new crisis randomly
+                if (Math.random() < 0.2 && this.activeCrises.length < 3) {
+                    const crisisTypes = [
+                        { type: "Cyber-attacco", zone: "universita" },
+                        { type: "Rivolta urbana", zone: "bolognina" },
+                        { type: "Scandalo corruzione", zone: "centroStorico" },
+                        { type: "Sabotaggio infrastrutture", zone: "interporto" },
+                        { type: "Infiltrazione corporativa", zone: "zonaFiera" }
+                    ];
+
+                    const ct = crisisTypes[Math.floor(Math.random() * crisisTypes.length)];
+                    this.createCrisis(ct.type, Math.floor(3 + Math.random() * 5), ct.zone);
+                }
+            }
+
+            addLog(message, type = "info") {
+                this.log.unshift({ turn: this.turn, message, type, timestamp: new Date().toLocaleTimeString() });
+                if (this.log.length > 20) this.log.pop();
+            }
+
+            generateEvent() {
+                const eventTypes = [
+                    {
+                        title: "⚙️ Sovraccarico Decisionale",
+                        description: "I manager chiave sono oberati. Lo span of control è troppo ampio e le decisioni critiche vengono ritardate.",
+                        zone: "centroStorico",
+                        choices: [
+                            { text: "Assumi nuovi middle manager", effect: () => { this.economy -= 10; this.governability += 5; this.addLog("Span ridotto con nuove assunzioni"); this.render(); } },
+                            { text: "Crea task force temporanea", effect: () => { this.createTaskForce("Emergency Response", [2, 3, 5], "Gestione sovraccarico"); this.render(); } },
+                            { text: "Delega ai subordinati", effect: () => { this.centralizationLevel -= 10; this.governability -= 3; this.addLog("Decentralizzazione forzata"); this.render(); } }
+                        ]
+                    },
+                    {
+                        title: "🔴 Blackout nella Bolognina",
+                        description: "Un attacco coordinato ha messo fuori uso la rete elettrica nel quartiere. I collettivi hacker sono sospettati, ma anche le corporazioni potrebbero averci guadagnato.",
+                        zone: "bolognina",
+                        choices: [
+                            { text: "Repressione dura sui collettivi", effect: () => this.applyEffect(-5, 0, 10, "order up, gov down") },
+                            { text: "Negozia con i collettivi", effect: () => this.applyEffect(5, -5, -5, "diplomacy") },
+                            { text: "Indaga le corporazioni", effect: () => this.applyEffect(0, -10, 0, "investigate corp") }
+                        ]
+                    },
+                    {
+                        title: "🏛️ Paralisi Burocratica",
+                        description: "Troppe gerarchie, troppi livelli. Le decisioni impiegano settimane. Lo span of control è troppo stretto.",
+                        zone: "centroStorico",
+                        choices: [
+                            { text: "Elimina livelli intermedi", effect: () => { this.governability += 10; this.order -= 5; this.addLog("Ristrutturazione: livelli ridotti"); this.render(); } },
+                            { text: "Implementa fast-track decisionale", effect: () => { this.governability += 5; this.centralizationLevel += 10; this.render(); } },
+                            { text: "Accetta la lentezza", effect: () => { this.economy -= 5; this.render(); } }
+                        ]
+                    },
+                    {
+                        title: "⚡ Frammentazione del Potere",
+                        description: "La decentralizzazione ha creato 'signori locali'. Alcuni quartieri ignorano le direttive centrali.",
+                        zone: "bolognina",
+                        choices: [
+                            { text: "Ri-centralizza con la forza", effect: () => { this.centralizationLevel += 20; this.order -= 10; this.addLog("Centralizzazione forzata"); this.render(); } },
+                            { text: "Negozia con i leader locali", effect: () => { this.governability += 5; this.economy -= 5; this.render(); } },
+                            { text: "Accetta l'autonomia locale", effect: () => { this.governability -= 10; this.order -= 5; this.render(); } }
+                        ]
+                    },
+                    {
+                        title: "📊 Leak di Dati dall'Università",
+                        description: "Ricerche sensibili su controllo neurale sono finite sul darknet. Lo scandalo minaccia la reputazione della città.",
+                        zone: "universita",
+                        choices: [
+                            { text: "Insabbia lo scandalo", effect: () => this.applyEffect(-10, 5, 0, "cover-up") },
+                            { text: "Investigazione pubblica", effect: () => this.applyEffect(10, -5, -5, "transparency") },
+                            { text: "Licenzia il rettore", effect: () => this.applyEffect(0, 0, 5, "scapegoat") }
+                        ]
+                    },
+                    {
+                        title: "⚠️ Sciopero all'Interporto",
+                        description: "I lavoratori bloccano le merci. Le corporazioni premono per l'intervento della sicurezza privata.",
+                        zone: "interporto",
+                        choices: [
+                            { text: "Autorizza sicurezza privata", effect: () => this.applyEffect(-10, 10, 5, "corporate wins") },
+                            { text: "Supporta i lavoratori", effect: () => this.applyEffect(5, -10, -10, "worker solidarity") },
+                            { text: "Media la trattativa", effect: () => this.applyEffect(5, -5, 0, "mediation") }
+                        ]
+                    },
+                    {
+                        title: "🎭 Infiltrato nel Comune",
+                        description: "Prove di un infiltrato corporativo nell'amministrazione. Chi è? Cosa sa?",
+                        zone: "centroStorico",
+                        choices: [
+                            { text: "Controspionaggio aggressivo", effect: () => this.applyEffect(-5, -5, 0, "paranoia mode") },
+                            { text: "Ignora e monitora", effect: () => this.applyEffect(-5, 0, -5, "passive") },
+                            { text: "Doppio gioco", effect: () => this.applyEffect(10, -10, 0, "risky play") }
+                        ]
+                    },
+                    {
+                        title: "💰 Offerta Corporativa",
+                        description: "MegaCorp offre finanziamenti massicci in cambio di concessioni su sorveglianza e dati cittadini.",
+                        zone: "zonaFiera",
+                        choices: [
+                            { text: "Accetta l'accordo", effect: () => this.applyEffect(-15, 20, 5, "sold out") },
+                            { text: "Rifiuta", effect: () => this.applyEffect(10, -15, 0, "independence") },
+                            { text: "Negozia condizioni", effect: () => this.applyEffect(0, 5, 0, "compromise") }
+                        ]
+                    },
+                    {
+                        title: "🔥 Rivolta in Bolognina",
+                        description: "Proteste violente contro la gentrificazione. Edifici occupati, scontri con la polizia.",
+                        zone: "bolognina",
+                        choices: [
+                            { text: "Repressione totale", effect: () => this.applyEffect(-20, 0, 15, "violence") },
+                            { text: "Ascolta le richieste", effect: () => this.applyEffect(15, -10, -10, "social justice") },
+                            { text: "Sgombero tattico", effect: () => this.applyEffect(-5, 0, 5, "tactical") }
+                        ]
+                    },
+                    {
+                        title: "🎓 Ricercatori in Fuga",
+                        description: "Un team di talenti accademici minaccia di trasferirsi se non vengono garantite libertà e fondi.",
+                        zone: "universita",
+                        choices: [
+                            { text: "Finanzia la ricerca", effect: () => this.applyEffect(5, -10, 0, "invest education") },
+                            { text: "Lasciali andare", effect: () => this.applyEffect(-5, 5, 0, "brain drain") },
+                            { text: "Accordo con corporate", effect: () => this.applyEffect(0, 10, 5, "privatize") }
+                        ]
+                    },
+                    {
+                        title: "🤝 Silos Organizzativi",
+                        description: "Sicurezza, IT e Comunicazione non si parlano. Manca coordinamento inter-funzionale durante una crisi.",
+                        zone: "centroStorico",
+                        choices: [
+                            { text: "Crea task force inter-funzionale", effect: () => { this.createTaskForce("Crisis Coordination", [2, 3, 5, 14], "Coordinamento inter-unità"); this.governability += 5; this.render(); } },
+                            { text: "Nomina un liaison officer", effect: () => { this.governability += 3; this.economy -= 3; this.render(); } },
+                            { text: "Lascia che si organizzino da soli", effect: () => { this.governability -= 8; this.render(); } }
+                        ]
+                    },
+                    {
+                        title: "🔥 Burn-out di Massa",
+                        description: "Stress altissimo tra i dirigenti chiave. Rischio dimissioni e crollo dell'efficienza.",
+                        zone: "centroStorico",
+                        choices: [
+                            { text: "Programma di wellness aziendale", effect: () => { this.economy -= 8; this.people.forEach(p => p.stress = Math.max(0, p.stress - 15)); this.addLog("Stress ridotto per tutti"); this.render(); } },
+                            { text: "Assumi temporanei per alleggerire", effect: () => { this.economy -= 12; this.governability += 5; this.render(); } },
+                            { text: "Ignora il problema", effect: () => { this.governability -= 10; this.people.forEach(p => p.loyalty -= 10); this.render(); } }
+                        ]
+                    }
+                ];
+
+                return eventTypes[Math.floor(Math.random() * eventTypes.length)];
+            }
+
+            applyEffect(govDelta, econDelta, orderDelta, reason) {
+                this.governability = Math.max(0, Math.min(100, this.governability + govDelta));
+                this.economy = Math.max(0, Math.min(100, this.economy + econDelta));
+                this.order = Math.max(0, Math.min(100, this.order + orderDelta));
+
+                this.addLog(`Effetto: Gov ${govDelta>=0?'+':''}${govDelta}, Econ ${econDelta>=0?'+':''}${econDelta}, Ord ${orderDelta>=0?'+':''}${orderDelta} [${reason}]`);
+
+                // Effetti sullo stress dei personaggi
+                this.people.forEach(person => {
+                    if (Math.random() < 0.3) {
+                        person.stress = Math.min(100, person.stress + Math.floor(Math.random() * 10));
+                    }
+                });
+
+                this.render();
+            }
+
+            nextTurn() {
+                this.turn++;
+
+                // Degrado naturale
+                this.governability = Math.max(0, this.governability - Math.floor(Math.random() * 3));
+                this.economy = Math.max(0, this.economy - Math.floor(Math.random() * 2));
+                this.order = Math.max(0, this.order - Math.floor(Math.random() * 3));
+
+                // Recupero stress casuale
+                this.people.forEach(person => {
+                    if (Math.random() < 0.4) {
+                        person.stress = Math.max(0, person.stress - Math.floor(Math.random() * 5));
+                    }
+                });
+
+                // Update organizational mechanics
+                this.analyzeOrganizationalRisks();
+                this.updateTaskForces();
+                this.updateCrises();
+
+                // Genera evento
+                if (Math.random() < 0.7) {
+                    const event = this.generateEvent();
+                    this.events.unshift(event);
+                    if (this.events.length > 3) this.events.pop();
+                }
+
+                this.addLog(`--- Turno ${this.turn} iniziato ---`);
+
+                // Check game over
+                if (this.governability < 10) {
+                    alert("🔴 GAME OVER: Collasso istituzionale! La città è nel caos.");
+                    this.resetGame();
+                    return;
+                }
+                if (this.economy < 10) {
+                    alert("🔴 GAME OVER: Bancarotta! L'economia è collassata.");
+                    this.resetGame();
+                    return;
+                }
+                if (this.order < 10) {
+                    alert("🔴 GAME OVER: Anarchia totale! Non c'è più controllo.");
+                    this.resetGame();
+                    return;
+                }
+
+                this.render();
+            }
+
+            resetGame() {
+                if (confirm("Vuoi ricominciare una nuova partita?")) {
+                    location.reload();
+                }
+            }
+
+            selectPerson(personId) {
+                this.selectedPerson = this.getPerson(personId);
+                this.render();
+            }
+
+            renderOrgChart(node, depth = 0) {
+                if (!node) return '';
+
+                const person = this.getPerson(node.personId);
+                if (!person) return '';
+
+                const selected = this.selectedPerson && this.selectedPerson.id === person.id ? 'selected' : '';
+                const marginLeft = depth * 20;
+                const span = this.calculateSpanOfControl(node);
+
+                // Determine span status color
+                let spanColor = 'var(--success)';
+                let spanWarning = '';
+                if (span > 7) {
+                    spanColor = 'var(--danger)';
+                    spanWarning = '⚠ SPAN ECCESSIVO';
+                } else if (span > 5) {
+                    spanColor = 'var(--warning)';
+                    spanWarning = '⚠ Span alto';
+                } else if (span === 1 && node.subordinates && node.subordinates.length > 0) {
+                    spanColor = 'var(--warning)';
+                    spanWarning = '⚠ Span troppo stretto';
+                }
+
+                let html = `
+                    <div class="org-node ${selected}" style="margin-left: ${marginLeft}px" onclick="game.selectPerson(${person.id})">
+                        <div class="org-node-header">
+                            <div>
+                                <div class="org-node-name">${person.name}</div>
+                                <div class="org-node-role">${person.role}</div>
+                            </div>
+                            <span class="faction-badge faction-${person.faction}">${person.faction}</span>
+                        </div>
+                        <div class="org-node-stats">
+                            <span>Lealtà: ${person.loyalty}</span>
+                            <span>Stress: ${person.stress}</span>
+                            <span>Rep: ${person.reputation}</span>
+                        </div>
+                        ${node.subordinates && node.subordinates.length > 0 ? `
+                            <div style="font-size: 0.7rem; margin-top: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
+                                <span style="color: ${spanColor};">↓ Span: ${span}</span>
+                                ${spanWarning ? `<span style="color: ${spanColor}; font-weight: bold;">${spanWarning}</span>` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+
+                if (node.subordinates) {
+                    node.subordinates.forEach(sub => {
+                        html += this.renderOrgChart(sub, depth + 1);
+                    });
+                }
+
+                return html;
+            }
+
+            render() {
+                // Update main stats
+                document.getElementById('turn-number').textContent = this.turn;
+                this.updateProgressBar('governability', this.governability);
+                this.updateProgressBar('economy', this.economy);
+                this.updateProgressBar('order', this.order);
+
+                // Update organizational metrics
+                document.getElementById('centralization-value').textContent = this.centralizationLevel + '%';
+                document.getElementById('span-value').textContent = this.calculateAverageSpan();
+                document.getElementById('taskforce-value').textContent = this.taskForces.length;
+
+                // Zones
+                const zonesHtml = Object.values(this.zones).map(zone => `
+                    <div class="zone">
+                        <div class="zone-name">${zone.name}</div>
+                        <div class="zone-status">Sorveglianza: ${zone.surveillance}% | Tensione: ${zone.tension}%</div>
+                        <div class="zone-status" style="font-size: 0.75rem; margin-top: 0.3rem;">
+                            ${zone.problems.slice(0, 2).join(' • ')}
+                        </div>
+                    </div>
+                `).join('');
+                document.getElementById('zones-list').innerHTML = zonesHtml;
+
+                // Task Forces
+                let taskForceHtml = '';
+                if (this.taskForces.length > 0) {
+                    taskForceHtml = this.taskForces.map(tf => `
+                        <div class="alert success" style="margin-bottom: 0.8rem;">
+                            <strong>${tf.name}</strong><br>
+                            <span style="font-size: 0.85rem;">
+                                Membri: ${tf.members.length} | Efficacia: ${Math.floor(tf.effectiveness)}% |
+                                Turni attiva: ${tf.turnsActive} |
+                                <button class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size: 0.75rem; margin-top: 0.3rem;" onclick="game.dissolveTaskForce(${tf.id})">Sciogli</button>
+                            </span>
+                        </div>
+                    `).join('');
+                } else {
+                    taskForceHtml = '<div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1rem;">Nessuna task force attiva</div>';
+                }
+                document.getElementById('active-taskforces').innerHTML = taskForceHtml;
+
+                // Active Crises
+                let crisesHtml = '';
+                if (this.activeCrises.length > 0) {
+                    crisesHtml = '<h3 style="color: var(--danger); margin-bottom: 1rem;">🚨 Crisi Attive</h3>';
+                    crisesHtml += this.activeCrises.map(crisis => `
+                        <div class="alert" style="border-left-color: var(--danger); margin-bottom: 0.8rem;">
+                            <strong>${crisis.type}</strong> - ${crisis.zone}<br>
+                            <span style="font-size: 0.85rem;">
+                                Gravità: ${crisis.severity}/10 |
+                                Escalation: Livello ${crisis.escalationLevel} |
+                                Turni attiva: ${crisis.turnsActive}
+                            </span>
+                        </div>
+                    `).join('');
+                }
+                document.getElementById('active-crises').innerHTML = crisesHtml;
+
+                // Orgchart
+                let orgChartHtml = '<div class="orgchart">';
+                orgChartHtml += '<h3 style="color: var(--accent-cyan); margin-bottom: 1rem;">COMUNE</h3>';
+                orgChartHtml += this.renderOrgChart(this.orgChart.root);
+                orgChartHtml += '</div>';
+
+                orgChartHtml += '<div class="orgchart">';
+                orgChartHtml += '<h3 style="color: var(--accent-pink); margin-bottom: 1rem;">CORPORAZIONI</h3>';
+                orgChartHtml += this.renderOrgChart(this.orgChart.corporate);
+                orgChartHtml += '</div>';
+
+                orgChartHtml += '<div class="orgchart">';
+                orgChartHtml += '<h3 style="color: var(--accent-yellow); margin-bottom: 1rem;">ALTRE FAZIONI</h3>';
+                orgChartHtml += this.renderOrgChart(this.orgChart.sindacati);
+                orgChartHtml += this.renderOrgChart(this.orgChart.hacker);
+                orgChartHtml += this.renderOrgChart(this.orgChart.criminali);
+                orgChartHtml += this.renderOrgChart(this.orgChart.universita);
+                orgChartHtml += '</div>';
+
+                document.getElementById('orgchart-view').innerHTML = orgChartHtml;
+
+                // Actions menu for selected person
+                if (this.selectedPerson) {
+                    document.getElementById('action-menu').style.display = 'block';
+                    const actionsHtml = `
+                        <div class="person-detail">
+                            <h4>${this.selectedPerson.name} - ${this.selectedPerson.role}</h4>
+                            <div style="margin: 0.5rem 0;">
+                                ${this.selectedPerson.traits.map(t => `<span class="trait">${t}</span>`).join('')}
+                            </div>
+                            <div style="margin-top: 1rem; font-size: 0.85rem; display: grid; gap: 0.3rem;">
+                                <div>Ambizione: ${this.selectedPerson.ambition}</div>
+                                <div>Competenza: ${this.selectedPerson.competence}</div>
+                                <div>Lealtà: ${this.selectedPerson.loyalty}</div>
+                                <div>Stress: ${this.selectedPerson.stress}</div>
+                                <div>Reputazione: ${this.selectedPerson.reputation}</div>
+                            </div>
+                        </div>
+                        <div style="display: grid; gap: 0.5rem; margin-top: 1rem;">
+                            <button class="btn" onclick="game.promovePerson(${this.selectedPerson.id})">↑ Promuovi</button>
+                            <button class="btn" onclick="game.delegateAuthority(${this.selectedPerson.id})">⚡ Delega Autorità</button>
+                            <button class="btn" onclick="game.investigatePerson(${this.selectedPerson.id})">🔍 Investiga</button>
+                            <button class="btn" onclick="game.sendTraining(${this.selectedPerson.id})">📚 Formazione</button>
+                            <button class="btn btn-danger" onclick="game.dismissPerson(${this.selectedPerson.id})">✕ Rimuovi</button>
+                        </div>
+                    `;
+                    document.getElementById('available-actions').innerHTML = actionsHtml;
+                } else {
+                    document.getElementById('action-menu').style.display = 'none';
+                }
+
+                // Events
+                const eventsHtml = this.events.map((event, idx) => `
+                    <div class="event">
+                        <div class="event-title">${event.title}</div>
+                        <div class="event-description">${event.description}</div>
+                        <div class="event-choices">
+                            ${event.choices.map((choice, cidx) => `
+                                <button class="btn" onclick="game.handleChoice(${idx}, ${cidx})">${choice.text}</button>
+                            `).join('')}
+                        </div>
+                    </div>
+                `).join('');
+                document.getElementById('events-feed').innerHTML = eventsHtml || '<div style="color: var(--text-secondary); text-align: center; padding: 2rem;">Nessun evento attivo</div>';
+
+                // Log
+                const logHtml = this.log.slice(0, 15).map(entry => `
+                    <div class="log-entry">
+                        <span class="timestamp">T${entry.turn}</span>
+                        ${entry.message}
+                    </div>
+                `).join('');
+                document.getElementById('log-feed').innerHTML = logHtml;
+            }
+
+            updateProgressBar(type, value) {
+                const bar = document.getElementById(`${type}-bar`);
+                bar.style.width = value + '%';
+                bar.textContent = Math.floor(value);
+
+                // Color based on value
+                if (value > 70) {
+                    bar.style.background = 'var(--success)';
+                } else if (value > 40) {
+                    bar.style.background = 'var(--warning)';
+                } else {
+                    bar.style.background = 'var(--danger)';
+                }
+            }
+
+            handleChoice(eventIdx, choiceIdx) {
+                const event = this.events[eventIdx];
+                const choice = event.choices[choiceIdx];
+
+                this.addLog(`Decisione: ${choice.text} (${event.title})`);
+                choice.effect();
+
+                // Remove event
+                this.events.splice(eventIdx, 1);
+                this.render();
+            }
+
+            promovePerson(personId) {
+                const person = this.getPerson(personId);
+                person.reputation += 10;
+                person.stress += 15;
+                this.addLog(`${person.name} promosso/a - reputazione aumentata`);
+                this.governability += 3;
+                this.render();
+            }
+
+            dismissPerson(personId) {
+                const person = this.getPerson(personId);
+                if (confirm(`Sei sicuro di voler rimuovere ${person.name}? Questo avrà conseguenze.`)) {
+                    this.addLog(`${person.name} rimosso/a dall'organizzazione`);
+                    this.governability -= 10;
+                    this.order -= 5;
+                    // In a full version, would remove from orgchart
+                    this.selectedPerson = null;
+                    this.render();
+                }
+            }
+
+            investigatePerson(personId) {
+                const person = this.getPerson(personId);
+                const secrets = [
+                    "Ha contatti con i clan criminali",
+                    "Vende informazioni alle corporazioni",
+                    "È in burn-out totale",
+                    "Sta pianificando di dimettersi",
+                    "Ha legami con i collettivi hacker",
+                    "È pulito/a - nessun segreto trovato"
+                ];
+                const secret = secrets[Math.floor(Math.random() * secrets.length)];
+                this.addLog(`Investigazione su ${person.name}: ${secret}`);
+                this.economy -= 5;
+                person.loyalty -= 10;
+                this.render();
+            }
+
+            showCreateTaskforce() {
+                const availablePeople = this.people.filter(p => p.stress < 80);
+                const names = availablePeople.slice(0, 8).map((p, i) => `${i + 1}. ${p.name} (${p.role})`).join('\n');
+
+                const input = prompt(
+                    `Crea una Task Force\n\nPersone disponibili:\n${names}\n\nInserisci:\n- Nome task force\n- IDs persone (es: 1,3,5)\n- Scopo\n\nFormato: Nome|IDs|Scopo`
+                );
+
+                if (!input) return;
+
+                const parts = input.split('|');
+                if (parts.length !== 3) {
+                    alert('Formato non valido');
+                    return;
+                }
+
+                const [name, idsStr, purpose] = parts;
+                const ids = idsStr.split(',').map(s => parseInt(s.trim()));
+                const members = ids.map(i => availablePeople[i - 1]?.id).filter(Boolean);
+
+                if (members.length === 0) {
+                    alert('Nessun membro valido selezionato');
+                    return;
+                }
+
+                this.createTaskForce(name.trim(), members, purpose.trim());
+                this.render();
+            }
+
+            dissolveTaskForce(tfId) {
+                const tf = this.taskForces.find(t => t.id === tfId);
+                if (tf) {
+                    this.addLog(`Task force "${tf.name}" sciolta manualmente`);
+                    this.taskForces = this.taskForces.filter(t => t.id !== tfId);
+                    this.render();
+                }
+            }
+
+            centralize() {
+                this.centralizationLevel = Math.min(100, this.centralizationLevel + 15);
+                this.addLog("Centralizzazione aumentata");
+                this.governability += 5;
+                this.economy -= 3;
+                this.render();
+            }
+
+            decentralize() {
+                this.centralizationLevel = Math.max(0, this.centralizationLevel - 15);
+                this.addLog("Decentralizzazione aumentata");
+                this.governability -= 3;
+                this.order -= 2;
+                this.render();
+            }
+
+            delegateAuthority(personId) {
+                const person = this.getPerson(personId);
+                person.stress = Math.max(0, person.stress - 20);
+                person.loyalty += 10;
+                this.centralizationLevel = Math.max(0, this.centralizationLevel - 5);
+                this.addLog(`Autorità delegata a ${person.name} - stress ridotto`);
+                this.render();
+            }
+
+            sendTraining(personId) {
+                const person = this.getPerson(personId);
+                person.competence = Math.min(100, person.competence + 10);
+                person.stress = Math.min(100, person.stress + 5);
+                this.economy -= 5;
+                this.addLog(`${person.name} inviato/a in formazione - competenza aumentata`);
+                this.render();
+            }
+        }
+
+        // Initialize and start game
+        const game = new BolognaCyberpunkGame();
+
+        function closePersonModal() {
+            document.getElementById('person-modal').style.display = 'none';
+        }
+
+        function startGame() {
+            document.getElementById('intro-screen').style.display = 'none';
+            game.addLog("Benvenuto/a, Architetto del Potere.");
+            game.addLog("Bologna richiede la tua guida strategica.");
+            game.render();
+        }
+    </script>
+</body>
+</html>
