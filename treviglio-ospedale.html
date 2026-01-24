@@ -1,0 +1,1325 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treviglio - Viaggio nella Storia e nella Sanità</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+Pro:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-dark: #1a2332;
+            --primary-mid: #2d3a4f;
+            --primary-light: #3d4f6a;
+            --accent-gold: #c9a959;
+            --accent-gold-light: #e8d5a3;
+            --accent-teal: #4a9b9b;
+            --accent-rose: #b56576;
+            --text-primary: #f5f5f5;
+            --text-secondary: #b8c5d6;
+            --text-muted: #8a9ab0;
+            --success: #6ab187;
+            --warning: #e8a838;
+            --danger: #d45d5d;
+            --gradient-cinema: linear-gradient(135deg, #1a2332 0%, #2d3a4f 50%, #1a2332 100%);
+        }
+
+        body {
+            font-family: 'Source Sans Pro', sans-serif;
+            background: var(--gradient-cinema);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Cinematic film grain overlay */
+        .film-grain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+            opacity: 0.03;
+            pointer-events: none;
+            z-index: 1000;
+        }
+
+        /* Cinematic letterbox bars */
+        .letterbox-top, .letterbox-bottom {
+            position: fixed;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background: #000;
+            z-index: 999;
+        }
+        .letterbox-top { top: 0; }
+        .letterbox-bottom { bottom: 0; }
+
+        /* Intro screen */
+        .intro-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #0d1117 0%, #1a2332 50%, #0d1117 100%);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .intro-logo {
+            width: 120px;
+            height: 120px;
+            border: 3px solid var(--accent-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            animation: pulse-glow 2s infinite;
+        }
+
+        .intro-logo svg {
+            width: 60px;
+            height: 60px;
+            fill: var(--accent-gold);
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(201, 169, 89, 0.3); }
+            50% { box-shadow: 0 0 40px rgba(201, 169, 89, 0.6); }
+        }
+
+        .intro-content {
+            max-width: 700px;
+            padding: 3rem;
+            text-align: center;
+        }
+
+        .intro-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin-bottom: 0.5rem;
+            letter-spacing: 3px;
+            text-shadow: 0 4px 20px rgba(201, 169, 89, 0.3);
+        }
+
+        .intro-subtitle {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-style: italic;
+        }
+
+        .intro-description {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+        }
+
+        .intro-features {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .intro-feature {
+            background: rgba(201, 169, 89, 0.1);
+            border: 1px solid rgba(201, 169, 89, 0.3);
+            border-radius: 8px;
+            padding: 1.5rem 1rem;
+            transition: all 0.3s;
+        }
+
+        .intro-feature:hover {
+            background: rgba(201, 169, 89, 0.15);
+            transform: translateY(-3px);
+        }
+
+        .intro-feature-icon {
+            font-size: 2rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .intro-feature-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            color: var(--accent-gold);
+            margin-bottom: 0.5rem;
+        }
+
+        .intro-feature-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .btn {
+            font-family: 'Source Sans Pro', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 1rem 2.5rem;
+            border: 2px solid var(--accent-gold);
+            background: transparent;
+            color: var(--accent-gold);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            background: var(--accent-gold);
+            color: var(--primary-dark);
+            box-shadow: 0 8px 30px rgba(201, 169, 89, 0.4);
+        }
+
+        .btn-primary {
+            background: var(--accent-gold);
+            color: var(--primary-dark);
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-gold-light);
+        }
+
+        .btn-small {
+            padding: 0.6rem 1.2rem;
+            font-size: 0.85rem;
+        }
+
+        /* Main game container */
+        .game-wrapper {
+            display: none;
+            padding: 60px 2rem;
+            min-height: 100vh;
+        }
+
+        .game-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-bottom: 1px solid rgba(201, 169, 89, 0.3);
+        }
+
+        .game-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--accent-gold);
+            letter-spacing: 2px;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 100px;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--accent-gold);
+            font-weight: 600;
+        }
+
+        .stat-value.score { color: var(--success); }
+        .stat-value.streak { color: var(--accent-teal); }
+
+        /* Main content area */
+        .game-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+
+        /* Side panel */
+        .side-panel {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(201, 169, 89, 0.2);
+            border-radius: 8px;
+            padding: 1.5rem;
+            height: fit-content;
+        }
+
+        .panel-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            color: var(--accent-gold);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(201, 169, 89, 0.3);
+        }
+
+        .category-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .category-item {
+            background: rgba(201, 169, 89, 0.05);
+            border: 1px solid rgba(201, 169, 89, 0.15);
+            border-radius: 6px;
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .category-item:hover, .category-item.active {
+            background: rgba(201, 169, 89, 0.15);
+            border-color: var(--accent-gold);
+            transform: translateX(5px);
+        }
+
+        .category-item.completed {
+            border-color: var(--success);
+            background: rgba(106, 177, 135, 0.1);
+        }
+
+        .category-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .category-progress {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .progress-mini {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 2px;
+            margin-top: 0.5rem;
+            overflow: hidden;
+        }
+
+        .progress-mini-fill {
+            height: 100%;
+            background: var(--accent-gold);
+            transition: width 0.5s ease;
+        }
+
+        /* Main question area */
+        .main-area {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(201, 169, 89, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .question-header {
+            background: linear-gradient(135deg, rgba(201, 169, 89, 0.2) 0%, rgba(201, 169, 89, 0.05) 100%);
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid rgba(201, 169, 89, 0.2);
+        }
+
+        .question-category {
+            font-size: 0.8rem;
+            color: var(--accent-gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 0.5rem;
+        }
+
+        .question-number {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+
+        .question-body {
+            padding: 2rem;
+        }
+
+        .question-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            line-height: 1.6;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+        }
+
+        .question-image {
+            width: 100%;
+            max-height: 250px;
+            object-fit: cover;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(201, 169, 89, 0.3);
+        }
+
+        .answers-grid {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .answer-option {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(201, 169, 89, 0.2);
+            border-radius: 8px;
+            padding: 1.2rem 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .answer-option:hover:not(.disabled) {
+            background: rgba(201, 169, 89, 0.1);
+            border-color: var(--accent-gold);
+            transform: translateX(8px);
+        }
+
+        .answer-option.correct {
+            background: rgba(106, 177, 135, 0.2);
+            border-color: var(--success);
+        }
+
+        .answer-option.incorrect {
+            background: rgba(212, 93, 93, 0.2);
+            border-color: var(--danger);
+        }
+
+        .answer-option.disabled {
+            cursor: default;
+            opacity: 0.7;
+        }
+
+        .answer-letter {
+            width: 36px;
+            height: 36px;
+            border: 2px solid var(--accent-gold);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            color: var(--accent-gold);
+            flex-shrink: 0;
+        }
+
+        .answer-option.correct .answer-letter {
+            border-color: var(--success);
+            background: var(--success);
+            color: white;
+        }
+
+        .answer-option.incorrect .answer-letter {
+            border-color: var(--danger);
+            background: var(--danger);
+            color: white;
+        }
+
+        .answer-text {
+            font-size: 1.05rem;
+            color: var(--text-primary);
+        }
+
+        /* Explanation panel */
+        .explanation-panel {
+            display: none;
+            background: linear-gradient(135deg, rgba(74, 155, 155, 0.15) 0%, rgba(74, 155, 155, 0.05) 100%);
+            border-top: 1px solid rgba(74, 155, 155, 0.3);
+            padding: 1.5rem 2rem;
+            margin-top: 1rem;
+        }
+
+        .explanation-panel.show {
+            display: block;
+            animation: slideDown 0.4s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .explanation-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            color: var(--accent-teal);
+            margin-bottom: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .explanation-text {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-secondary);
+        }
+
+        .next-btn-container {
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: flex-end;
+            border-top: 1px solid rgba(201, 169, 89, 0.1);
+        }
+
+        /* Results screen */
+        .results-screen {
+            display: none;
+            text-align: center;
+            padding: 3rem;
+        }
+
+        .results-screen.show {
+            display: block;
+        }
+
+        .results-icon {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .results-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: var(--accent-gold);
+            margin-bottom: 1rem;
+        }
+
+        .results-score {
+            font-size: 3rem;
+            color: var(--success);
+            font-weight: 700;
+            margin: 1.5rem 0;
+        }
+
+        .results-message {
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .results-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        .result-stat {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 1.5rem 2rem;
+            border-radius: 8px;
+            border: 1px solid rgba(201, 169, 89, 0.2);
+        }
+
+        .result-stat-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: var(--accent-gold);
+        }
+
+        .result-stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+        }
+
+        /* Info cards */
+        .info-section {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(201, 169, 89, 0.2);
+            border-radius: 8px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .info-section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--accent-gold);
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .info-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .info-card {
+            background: linear-gradient(135deg, rgba(201, 169, 89, 0.1) 0%, rgba(201, 169, 89, 0.02) 100%);
+            border: 1px solid rgba(201, 169, 89, 0.2);
+            border-radius: 8px;
+            padding: 1.5rem;
+            transition: all 0.3s;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-gold);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .info-card-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.1rem;
+            color: var(--accent-gold);
+            margin-bottom: 0.8rem;
+        }
+
+        .info-card-text {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Timeline component */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+            margin-top: 1.5rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, var(--accent-gold) 0%, var(--accent-teal) 100%);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -34px;
+            top: 5px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent-gold);
+            border: 2px solid var(--primary-dark);
+        }
+
+        .timeline-year {
+            font-family: 'Playfair Display', serif;
+            font-size: 1rem;
+            color: var(--accent-gold);
+            margin-bottom: 0.3rem;
+        }
+
+        .timeline-text {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .game-content {
+                grid-template-columns: 1fr;
+            }
+
+            .side-panel {
+                order: 2;
+            }
+
+            .intro-features {
+                grid-template-columns: 1fr;
+            }
+
+            .intro-title {
+                font-size: 2rem;
+            }
+
+            .question-text {
+                font-size: 1.2rem;
+            }
+        }
+
+        /* Animations */
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .slide-up {
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Decorative elements */
+        .decorative-line {
+            width: 60px;
+            height: 2px;
+            background: var(--accent-gold);
+            margin: 1.5rem auto;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .badge-gold { background: rgba(201, 169, 89, 0.2); color: var(--accent-gold); }
+        .badge-teal { background: rgba(74, 155, 155, 0.2); color: var(--accent-teal); }
+        .badge-rose { background: rgba(181, 101, 118, 0.2); color: var(--accent-rose); }
+    </style>
+</head>
+<body>
+    <div class="film-grain"></div>
+    <div class="letterbox-top"></div>
+    <div class="letterbox-bottom"></div>
+
+    <!-- Intro Screen -->
+    <div class="intro-screen" id="intro-screen">
+        <div class="intro-logo">
+            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M12 2L2 7v10l10 5 10-5V7L12 2zm0 2.5L19 8v8l-7 3.5L5 16V8l7-3.5zM12 11a2 2 0 100 4 2 2 0 000-4z"/>
+                <path d="M12 6v4M12 14v4M8 8l2 2M14 14l2 2M16 8l-2 2M8 14l2 2"/>
+            </svg>
+        </div>
+
+        <div class="intro-content">
+            <h1 class="intro-title">TREVIGLIO</h1>
+            <p class="intro-subtitle">Viaggio nella Storia e nella Sanità</p>
+
+            <div class="decorative-line"></div>
+
+            <p class="intro-description">
+                Un'esperienza interattiva per scoprire la storia millenaria di Treviglio,
+                l'eccellenza del suo Ospedale e i servizi socio-sanitari del territorio.
+                Metti alla prova le tue conoscenze e approfondisci la cultura della tua comunità.
+            </p>
+
+            <div class="intro-features">
+                <div class="intro-feature">
+                    <div class="intro-feature-icon">🏛️</div>
+                    <div class="intro-feature-title">Storia</div>
+                    <div class="intro-feature-desc">Dalle origini medievali al Miracolo della Madonna</div>
+                </div>
+                <div class="intro-feature">
+                    <div class="intro-feature-icon">🏥</div>
+                    <div class="intro-feature-title">Ospedale</div>
+                    <div class="intro-feature-desc">L'ASST Bergamo Ovest e i suoi servizi di eccellenza</div>
+                </div>
+                <div class="intro-feature">
+                    <div class="intro-feature-icon">🤝</div>
+                    <div class="intro-feature-title">Servizi Sociali</div>
+                    <div class="intro-feature-desc">La rete di assistenza e supporto alla comunità</div>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="startGame()">INIZIA IL VIAGGIO</button>
+        </div>
+    </div>
+
+    <!-- Main Game -->
+    <div class="game-wrapper" id="game-wrapper">
+        <header class="game-header">
+            <h1 class="game-title">Treviglio - Viaggio nella Storia e nella Sanità</h1>
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-label">Punteggio</span>
+                    <span class="stat-value score" id="score">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Domanda</span>
+                    <span class="stat-value" id="question-counter">1/20</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Serie</span>
+                    <span class="stat-value streak" id="streak">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Categoria</span>
+                    <span class="stat-value" id="current-category" style="font-size: 1rem;">--</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="game-content">
+            <!-- Side Panel -->
+            <div class="side-panel">
+                <h2 class="panel-title">Aree Tematiche</h2>
+                <div class="category-list" id="category-list"></div>
+
+                <div class="info-section" style="margin-top: 2rem; padding: 1rem;">
+                    <h3 style="font-family: 'Playfair Display', serif; color: var(--accent-gold); font-size: 1rem; margin-bottom: 1rem;">Cronologia</h3>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-year">1392</div>
+                            <div class="timeline-text">Il Miracolo della Madonna delle Lacrime</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-year">1522</div>
+                            <div class="timeline-text">Assedio francese e liberazione</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-year">1933</div>
+                            <div class="timeline-text">Fondazione Ospedale Civile</div>
+                        </div>
+                        <div class="timeline-item">
+                            <div class="timeline-year">2016</div>
+                            <div class="timeline-text">Nasce ASST Bergamo Ovest</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Question Area -->
+            <div class="main-area" id="main-area">
+                <div class="question-header">
+                    <div class="question-category" id="q-category">STORIA DI TREVIGLIO</div>
+                    <div class="question-number" id="q-number">Domanda 1 di 20</div>
+                </div>
+
+                <div class="question-body" id="question-body">
+                    <p class="question-text" id="question-text">
+                        Caricamento della domanda...
+                    </p>
+
+                    <div class="answers-grid" id="answers-grid">
+                        <!-- Answers will be dynamically inserted -->
+                    </div>
+
+                    <div class="explanation-panel" id="explanation-panel">
+                        <div class="explanation-title">
+                            <span>📚</span> Approfondimento
+                        </div>
+                        <p class="explanation-text" id="explanation-text"></p>
+                    </div>
+                </div>
+
+                <div class="next-btn-container" id="next-btn-container" style="display: none;">
+                    <button class="btn" onclick="game.nextQuestion()">CONTINUA</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Screen -->
+        <div class="results-screen" id="results-screen">
+            <div class="results-icon">🏆</div>
+            <h2 class="results-title">Complimenti!</h2>
+            <div class="results-score" id="final-score">0%</div>
+            <p class="results-message" id="results-message">
+                Hai completato il viaggio attraverso la storia e i servizi di Treviglio.
+            </p>
+
+            <div class="results-stats">
+                <div class="result-stat">
+                    <div class="result-stat-value" id="correct-count">0</div>
+                    <div class="result-stat-label">Risposte Corrette</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-value" id="max-streak">0</div>
+                    <div class="result-stat-label">Serie Massima</div>
+                </div>
+                <div class="result-stat">
+                    <div class="result-stat-value" id="time-spent">0:00</div>
+                    <div class="result-stat-label">Tempo</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+                <button class="btn btn-primary" onclick="game.restart()">GIOCA ANCORA</button>
+                <button class="btn" onclick="showIntro()">MENU PRINCIPALE</button>
+            </div>
+
+            <div class="info-section" style="margin-top: 3rem;">
+                <h3 class="info-section-title">Scopri di più</h3>
+                <div class="info-cards">
+                    <div class="info-card">
+                        <div class="info-card-icon">🏥</div>
+                        <div class="info-card-title">ASST Bergamo Ovest</div>
+                        <div class="info-card-text">
+                            L'Azienda Socio Sanitaria Territoriale serve oltre 500.000 abitanti
+                            con servizi di eccellenza in cardiologia, oncologia, chirurgia e pronto soccorso.
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-icon">📞</div>
+                        <div class="info-card-title">Numeri Utili</div>
+                        <div class="info-card-text">
+                            <strong>CUP:</strong> 035.4161888<br>
+                            <strong>Pronto Soccorso:</strong> 118<br>
+                            <strong>URP:</strong> urp@asst-bgovest.it
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <div class="info-card-icon">🤝</div>
+                        <div class="info-card-title">Servizi Sociali</div>
+                        <div class="info-card-text">
+                            Il Comune di Treviglio offre assistenza domiciliare,
+                            sostegno alle famiglie, servizi per anziani e disabili.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =============================================
+        // GAME ENGINE - Treviglio Quiz
+        // =============================================
+
+        class TreviglioQuizGame {
+            constructor() {
+                this.score = 0;
+                this.currentQuestion = 0;
+                this.streak = 0;
+                this.maxStreak = 0;
+                this.correctAnswers = 0;
+                this.startTime = null;
+                this.answered = false;
+                this.questions = this.initQuestions();
+                this.categories = {
+                    storia: { name: "Storia di Treviglio", icon: "🏛️", completed: 0, total: 0 },
+                    ospedale: { name: "Ospedale e Sanità", icon: "🏥", completed: 0, total: 0 },
+                    servizi: { name: "Servizi Sociali", icon: "🤝", completed: 0, total: 0 },
+                    territorio: { name: "Territorio e Cultura", icon: "🌍", completed: 0, total: 0 }
+                };
+
+                // Count questions per category
+                this.questions.forEach(q => {
+                    if (this.categories[q.category]) {
+                        this.categories[q.category].total++;
+                    }
+                });
+            }
+
+            initQuestions() {
+                return [
+                    // STORIA DI TREVIGLIO
+                    {
+                        category: "storia",
+                        question: "In quale anno avvenne il celebre 'Miracolo della Madonna delle Lacrime' a Treviglio?",
+                        answers: ["1392", "1450", "1522", "1600"],
+                        correct: 0,
+                        explanation: "Il 28 febbraio 1522, durante l'assedio francese guidato da Odet de Foix, la popolazione si rifugiò nel Santuario. La Madonna affrescata da Bernardo Zenale sembrò lacrimare, e miracolosamente l'esercito si ritirò. Questo evento è ancora oggi celebrato ogni anno."
+                    },
+                    {
+                        category: "storia",
+                        question: "Quale pittore realizzò l'affresco della Madonna delle Lacrime nel Santuario di Treviglio?",
+                        answers: ["Leonardo da Vinci", "Bernardo Zenale", "Bramante", "Caravaggio"],
+                        correct: 1,
+                        explanation: "Bernardo Zenale (1436-1526) fu un pittore e architetto lombardo. L'affresco della Madonna col Bambino nel Santuario di Treviglio è una delle sue opere più venerate, resa celebre dal miracolo del 1522."
+                    },
+                    {
+                        category: "storia",
+                        question: "Treviglio fu un importante Comune libero nel Medioevo. Da quale signoria fu poi governata nel XV secolo?",
+                        answers: ["Scaligeri", "Visconti", "Estensi", "Gonzaga"],
+                        correct: 1,
+                        explanation: "Treviglio passò sotto il dominio dei Visconti di Milano nel XIV secolo, per poi entrare nella Repubblica di Venezia e infine tornare sotto Milano. La sua posizione strategica la rese sempre contesa."
+                    },
+                    {
+                        category: "storia",
+                        question: "Il Santuario della Madonna delle Lacrime è costruito in quale stile architettonico?",
+                        answers: ["Romanico", "Gotico", "Rinascimentale-Barocco", "Neoclassico"],
+                        correct: 2,
+                        explanation: "Il Santuario fu edificato a partire dal 1594 in stile tardo-rinascimentale con elementi barocchi. La facciata fu completata nel 1741. All'interno conserva preziose opere d'arte e l'affresco miracoloso."
+                    },
+                    {
+                        category: "storia",
+                        question: "Quale importante via di comunicazione storica attraversa Treviglio?",
+                        answers: ["Via Emilia", "Via Francigena", "Strada Padana Superiore", "Via Postumia"],
+                        correct: 2,
+                        explanation: "Treviglio è attraversata dalla Strada Padana Superiore (ex SS11), storica arteria che collegava Torino a Venezia. Questa posizione ha favorito lo sviluppo commerciale e industriale della città."
+                    },
+
+                    // OSPEDALE E SANITÀ
+                    {
+                        category: "ospedale",
+                        question: "In quale anno fu inaugurato l'Ospedale Civile di Treviglio?",
+                        answers: ["1900", "1933", "1950", "1970"],
+                        correct: 1,
+                        explanation: "L'Ospedale Civile di Treviglio fu inaugurato nel 1933, nato dalla fusione di precedenti strutture assistenziali. Nel corso dei decenni si è trasformato in un moderno presidio sanitario di riferimento."
+                    },
+                    {
+                        category: "ospedale",
+                        question: "L'Ospedale di Treviglio fa parte di quale ASST (Azienda Socio Sanitaria Territoriale)?",
+                        answers: ["ASST Bergamo Est", "ASST Bergamo Ovest", "ASST Papa Giovanni XXIII", "ASST Cremona"],
+                        correct: 1,
+                        explanation: "L'ASST Bergamo Ovest, istituita nel 2016, comprende gli ospedali di Treviglio e Romano di Lombardia. Serve un bacino di oltre 500.000 abitanti della pianura bergamasca occidentale."
+                    },
+                    {
+                        category: "ospedale",
+                        question: "Quale reparto dell'Ospedale di Treviglio è considerato un'eccellenza regionale?",
+                        answers: ["Cardiologia interventistica", "Ortopedia", "Dermatologia", "Oculistica"],
+                        correct: 0,
+                        explanation: "La Cardiologia di Treviglio è centro di riferimento regionale per l'angioplastica primaria nell'infarto. Opera 24/7 con équipe specializzate e tecnologie all'avanguardia per il trattamento delle emergenze cardiache."
+                    },
+                    {
+                        category: "ospedale",
+                        question: "Quanti posti letto ha approssimativamente l'Ospedale di Treviglio?",
+                        answers: ["Circa 200", "Circa 400", "Circa 600", "Circa 800"],
+                        correct: 1,
+                        explanation: "L'Ospedale di Treviglio dispone di circa 400 posti letto, con reparti di medicina, chirurgia, ostetricia, pediatria, cardiologia, oncologia e terapia intensiva. È dotato di pronto soccorso H24."
+                    },
+                    {
+                        category: "ospedale",
+                        question: "Quale servizio dell'ASST Bergamo Ovest gestisce le prenotazioni di visite ed esami?",
+                        answers: ["URP", "CUP", "ADI", "SERD"],
+                        correct: 1,
+                        explanation: "Il CUP (Centro Unico Prenotazioni) gestisce le prenotazioni di visite specialistiche ed esami diagnostici. È raggiungibile telefonicamente, online o presso gli sportelli dedicati in ospedale e nelle strutture territoriali."
+                    },
+                    {
+                        category: "ospedale",
+                        question: "L'Ospedale di Treviglio dispone di un servizio di elisoccorso?",
+                        answers: ["Sì, con elisuperficie dedicata", "No, si appoggia a Bergamo", "Solo per trasferimenti programmati", "Solo nelle ore diurne"],
+                        correct: 0,
+                        explanation: "L'Ospedale di Treviglio è dotato di elisuperficie certificata per l'atterraggio dell'elisoccorso, garantendo tempi rapidi di intervento per le emergenze più gravi e il trasferimento verso centri specializzati."
+                    },
+                    {
+                        category: "ospedale",
+                        question: "Quale struttura dell'ASST Bergamo Ovest offre assistenza sanitaria a domicilio?",
+                        answers: ["CAD", "ADI", "RSA", "CDI"],
+                        correct: 1,
+                        explanation: "L'ADI (Assistenza Domiciliare Integrata) fornisce cure mediche e infermieristiche a domicilio per pazienti fragili, anziani o con patologie croniche. Coordina medici, infermieri, fisioterapisti e operatori sociali."
+                    },
+
+                    // SERVIZI SOCIALI
+                    {
+                        category: "servizi",
+                        question: "Quale servizio comunale di Treviglio supporta le famiglie in difficoltà economica?",
+                        answers: ["Servizio Sociale di Base", "Protezione Civile", "Ufficio Tributi", "Anagrafe"],
+                        correct: 0,
+                        explanation: "Il Servizio Sociale di Base del Comune offre supporto alle famiglie vulnerabili: contributi economici, buoni spesa, sostegno all'abitazione, accompagnamento sociale e connessione con servizi specialistici."
+                    },
+                    {
+                        category: "servizi",
+                        question: "Come si chiama il servizio che assiste gli anziani non autosufficienti a domicilio?",
+                        answers: ["SAD (Servizio Assistenza Domiciliare)", "CAF", "Patronato", "INPS"],
+                        correct: 0,
+                        explanation: "Il SAD fornisce assistenza domiciliare agli anziani: aiuto nell'igiene personale, preparazione pasti, accompagnamento, supporto nelle attività quotidiane. Lavora in rete con medici di base e servizi sanitari."
+                    },
+                    {
+                        category: "servizi",
+                        question: "Quale servizio dell'ASST si occupa di dipendenze patologiche (alcol, droghe, gioco d'azzardo)?",
+                        answers: ["CSM", "SERD", "NOA", "UONPIA"],
+                        correct: 1,
+                        explanation: "Il SERD (Servizio Dipendenze) offre prevenzione, cura e riabilitazione per dipendenze da sostanze e comportamentali. Équipe multidisciplinari (medici, psicologi, educatori) seguono percorsi personalizzati."
+                    },
+                    {
+                        category: "servizi",
+                        question: "Quale servizio territoriale si occupa della salute mentale degli adulti?",
+                        answers: ["Consultorio Familiare", "CSM (Centro Salute Mentale)", "Pediatria di Comunità", "Medicina dello Sport"],
+                        correct: 1,
+                        explanation: "Il CSM è il punto di riferimento per la salute mentale adulta: visite psichiatriche, psicoterapia, interventi riabilitativi, gestione crisi. Collabora con servizi sociali, associazioni e famiglie per l'inclusione."
+                    },
+                    {
+                        category: "servizi",
+                        question: "Quale servizio offre supporto psicologico e sanitario alle famiglie e alle donne in gravidanza?",
+                        answers: ["Pronto Soccorso", "Consultorio Familiare", "Guardia Medica", "Farmacia Territoriale"],
+                        correct: 1,
+                        explanation: "Il Consultorio Familiare offre: assistenza alla gravidanza, sostegno alla genitorialità, contraccezione, prevenzione oncologica femminile, supporto psicologico. È un servizio gratuito aperto a tutte le famiglie."
+                    },
+                    {
+                        category: "servizi",
+                        question: "Quale servizio dell'ASST si occupa dei disturbi neuropsichiatrici dell'infanzia e adolescenza?",
+                        answers: ["SERD", "UONPIA", "CSM", "NOA"],
+                        correct: 1,
+                        explanation: "L'UONPIA (Unità Operativa Neuropsichiatria Infanzia e Adolescenza) valuta e tratta disturbi del neurosviluppo, apprendimento, comportamento e disagio psicologico nei minori. Collabora strettamente con scuole e famiglie."
+                    },
+
+                    // TERRITORIO E CULTURA
+                    {
+                        category: "territorio",
+                        question: "In quale provincia si trova Treviglio?",
+                        answers: ["Milano", "Bergamo", "Cremona", "Brescia"],
+                        correct: 1,
+                        explanation: "Treviglio è il secondo comune più popoloso della provincia di Bergamo, situato nella pianura occidentale bergamasca, al confine con le province di Milano e Cremona."
+                    },
+                    {
+                        category: "territorio",
+                        question: "Quale fiume scorre nelle vicinanze di Treviglio?",
+                        answers: ["Adda", "Serio", "Oglio", "Brembo"],
+                        correct: 1,
+                        explanation: "Il fiume Serio scorre a est di Treviglio, mentre l'Adda delimita il confine occidentale del territorio. La Gera d'Adda, area tra i due fiumi, è una zona agricola di grande valore."
+                    },
+                    {
+                        category: "territorio",
+                        question: "Treviglio è un importante nodo ferroviario. Quali linee si incrociano nella sua stazione?",
+                        answers: ["Solo Milano-Venezia", "Milano-Venezia e Bergamo-Cremona", "Solo alta velocità", "Milano-Roma"],
+                        correct: 1,
+                        explanation: "La stazione di Treviglio è un importante nodo ferroviario dove si incrociano la linea Milano-Venezia e la Bergamo-Cremona. È anche capolinea della linea suburbana S5 Milano-Treviglio."
+                    },
+                    {
+                        category: "territorio",
+                        question: "Quale prodotto agricolo tipico caratterizza il territorio trevigliese?",
+                        answers: ["Vino", "Mais e cereali", "Agrumi", "Olive"],
+                        correct: 1,
+                        explanation: "La pianura bergamasca è terra di grande tradizione agricola: mais, frumento, orzo e foraggi per l'allevamento bovino. Il mais è alla base della polenta, piatto tipico del territorio."
+                    },
+                    {
+                        category: "territorio",
+                        question: "Quanti abitanti ha approssimativamente il comune di Treviglio?",
+                        answers: ["Circa 15.000", "Circa 30.000", "Circa 50.000", "Circa 70.000"],
+                        correct: 1,
+                        explanation: "Treviglio conta circa 30.000 abitanti, rendendolo il secondo comune più popoloso della provincia di Bergamo dopo il capoluogo. È un importante centro commerciale e di servizi."
+                    },
+                    {
+                        category: "territorio",
+                        question: "Quale celebre festa patronale si svolge ogni anno a Treviglio il 28 febbraio?",
+                        answers: ["Festa di San Martino", "Festa della Madonna delle Lacrime", "Festa di Sant'Antonio", "Festa del Patrono"],
+                        correct: 1,
+                        explanation: "Il 28 febbraio Treviglio celebra la Festa della Madonna delle Lacrime, in ricordo del miracolo del 1522. La città si anima con processioni, celebrazioni religiose, bancarelle e eventi culturali."
+                    }
+                ];
+            }
+
+            shuffleQuestions() {
+                // Fisher-Yates shuffle
+                for (let i = this.questions.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [this.questions[i], this.questions[j]] = [this.questions[j], this.questions[i]];
+                }
+            }
+
+            start() {
+                this.shuffleQuestions();
+                this.score = 0;
+                this.currentQuestion = 0;
+                this.streak = 0;
+                this.maxStreak = 0;
+                this.correctAnswers = 0;
+                this.startTime = Date.now();
+                this.answered = false;
+
+                // Reset category progress
+                Object.keys(this.categories).forEach(key => {
+                    this.categories[key].completed = 0;
+                });
+
+                this.renderCategoryList();
+                this.showQuestion();
+            }
+
+            showQuestion() {
+                if (this.currentQuestion >= this.questions.length) {
+                    this.showResults();
+                    return;
+                }
+
+                const q = this.questions[this.currentQuestion];
+                this.answered = false;
+
+                // Update header
+                document.getElementById('q-category').textContent = this.categories[q.category].name.toUpperCase();
+                document.getElementById('q-number').textContent = `Domanda ${this.currentQuestion + 1} di ${this.questions.length}`;
+                document.getElementById('question-counter').textContent = `${this.currentQuestion + 1}/${this.questions.length}`;
+                document.getElementById('current-category').textContent = this.categories[q.category].icon;
+
+                // Update question
+                document.getElementById('question-text').textContent = q.question;
+
+                // Generate answer options
+                const letters = ['A', 'B', 'C', 'D'];
+                const answersHtml = q.answers.map((answer, idx) => `
+                    <div class="answer-option fade-in" onclick="game.selectAnswer(${idx})" id="answer-${idx}">
+                        <span class="answer-letter">${letters[idx]}</span>
+                        <span class="answer-text">${answer}</span>
+                    </div>
+                `).join('');
+
+                document.getElementById('answers-grid').innerHTML = answersHtml;
+
+                // Hide explanation and next button
+                document.getElementById('explanation-panel').classList.remove('show');
+                document.getElementById('next-btn-container').style.display = 'none';
+
+                // Hide results screen
+                document.getElementById('results-screen').classList.remove('show');
+                document.getElementById('main-area').style.display = 'block';
+            }
+
+            selectAnswer(idx) {
+                if (this.answered) return;
+                this.answered = true;
+
+                const q = this.questions[this.currentQuestion];
+                const isCorrect = idx === q.correct;
+
+                // Disable all answers
+                document.querySelectorAll('.answer-option').forEach(el => {
+                    el.classList.add('disabled');
+                });
+
+                // Mark selected answer
+                const selectedEl = document.getElementById(`answer-${idx}`);
+                const correctEl = document.getElementById(`answer-${q.correct}`);
+
+                if (isCorrect) {
+                    selectedEl.classList.add('correct');
+                    this.score += 10 + (this.streak * 2); // Bonus for streak
+                    this.streak++;
+                    this.correctAnswers++;
+                    this.maxStreak = Math.max(this.maxStreak, this.streak);
+
+                    // Update category progress
+                    this.categories[q.category].completed++;
+                } else {
+                    selectedEl.classList.add('incorrect');
+                    correctEl.classList.add('correct');
+                    this.streak = 0;
+                }
+
+                // Update stats
+                document.getElementById('score').textContent = this.score;
+                document.getElementById('streak').textContent = this.streak;
+                this.renderCategoryList();
+
+                // Show explanation
+                document.getElementById('explanation-text').textContent = q.explanation;
+                document.getElementById('explanation-panel').classList.add('show');
+
+                // Show next button
+                document.getElementById('next-btn-container').style.display = 'flex';
+            }
+
+            nextQuestion() {
+                this.currentQuestion++;
+                this.showQuestion();
+            }
+
+            showResults() {
+                document.getElementById('main-area').style.display = 'none';
+
+                const percentage = Math.round((this.correctAnswers / this.questions.length) * 100);
+                const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
+                const minutes = Math.floor(elapsed / 60);
+                const seconds = elapsed % 60;
+
+                document.getElementById('final-score').textContent = `${percentage}%`;
+                document.getElementById('correct-count').textContent = `${this.correctAnswers}/${this.questions.length}`;
+                document.getElementById('max-streak').textContent = this.maxStreak;
+                document.getElementById('time-spent').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+                // Set message based on score
+                let message = '';
+                let icon = '';
+                if (percentage >= 90) {
+                    message = "Eccellente! Sei un vero esperto di Treviglio e dei suoi servizi socio-sanitari!";
+                    icon = "🏆";
+                } else if (percentage >= 70) {
+                    message = "Ottimo risultato! Conosci bene la storia e i servizi del territorio.";
+                    icon = "🎖️";
+                } else if (percentage >= 50) {
+                    message = "Buon lavoro! Continua ad esplorare per approfondire le tue conoscenze.";
+                    icon = "📚";
+                } else {
+                    message = "Hai iniziato il viaggio! Riprova per scoprire di più su Treviglio.";
+                    icon = "🌟";
+                }
+
+                document.querySelector('.results-icon').textContent = icon;
+                document.getElementById('results-message').textContent = message;
+
+                document.getElementById('results-screen').classList.add('show');
+            }
+
+            restart() {
+                this.start();
+            }
+
+            renderCategoryList() {
+                const html = Object.entries(this.categories).map(([key, cat]) => {
+                    const progress = cat.total > 0 ? (cat.completed / cat.total) * 100 : 0;
+                    const isCompleted = cat.completed === cat.total && cat.total > 0;
+
+                    return `
+                        <div class="category-item ${isCompleted ? 'completed' : ''}">
+                            <div class="category-name">${cat.icon} ${cat.name}</div>
+                            <div class="category-progress">${cat.completed}/${cat.total} domande</div>
+                            <div class="progress-mini">
+                                <div class="progress-mini-fill" style="width: ${progress}%"></div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+                document.getElementById('category-list').innerHTML = html;
+            }
+        }
+
+        // Initialize game
+        const game = new TreviglioQuizGame();
+
+        function startGame() {
+            document.getElementById('intro-screen').style.display = 'none';
+            document.getElementById('game-wrapper').style.display = 'block';
+            game.start();
+        }
+
+        function showIntro() {
+            document.getElementById('game-wrapper').style.display = 'none';
+            document.getElementById('intro-screen').style.display = 'flex';
+        }
+    </script>
+</body>
+</html>
